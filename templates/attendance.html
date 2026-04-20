@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Records - Student Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2> Student Attendance System</h2>
+            </div>
+            <div class="nav-menu">
+                <span class="nav-user">👤 {{ username }} ({{ role }})</span>
+                <a href="/logout" class="btn-logout">Log Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a href="/dashboard">
+                        <span class="icon">📈</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item active">
+                    <a href="/attendance">
+                        <span class="icon">✓</span>
+                        <span>Attendance Records</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/students">
+                        <span class="icon">👥</span>
+                        <span>Student Management</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/reports">
+                        <span class="icon">📄</span>
+                        <span>Reports & Statistics</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Attendance Records</h1>
+            </div>
+
+            <!-- Course Selection Section -->
+            <div class="course-selection-card">
+                <h2>Select Course for Attendance</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="courseSelect">Select Your Course:</label>
+                        <select id="courseSelect" class="form-control">
+                            <option value="">-- Please Select a Course --</option>
+                        </select>
+                    </div>
+                    <button id="loadRosterBtn" class="btn-primary" disabled> Load Class Roster</button>
+                </div>
+                <div id="courseInfo" class="course-info" style="display: none;">
+                    <div class="info-item">
+                        <span class="label">Year:</span>
+                        <span id="infoYear">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Course:</span>
+                        <span id="infoCourse">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Section:</span>
+                        <span id="infoSection">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Subject:</span>
+                        <span id="infoSubject">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Class Roster for Quick Attendance -->
+            <div id="rosterSection" class="roster-section" style="display: none;">
+                <div class="section-header">
+                    <h2>👥 Class Roster - Quick Attendance</h2>
+                    <div class="legend">
+                        <span class="legend-item">
+                            <span class="color-box" style="background: #4caf82;"></span>
+                            <span>Present</span>
+                        </span>
+                        <span class="legend-item">
+                            <span class="color-box" style="background: #FF9800;"></span>
+                            <span>Late</span>
+                        </span>
+                        <span class="legend-item">
+                            <span class="color-box" style="background: #f44336;"></span>
+                            <span>Absent</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table roster-table">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Quick Mark</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rosterTableBody">
+                            <tr>
+                                <td colspan="5" class="loading">Please select a course first</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="roster-actions">
+                    <button id="markAllPresentBtn" class="btn-success">✓ Mark All Present</button>
+                    <button id="clearAllBtn" class="btn-secondary"> Clear All</button>
+                </div>
+            </div>
+
+            <!-- Recent Records Section -->
+            <div class="records-section" style="margin-top: 30px;">
+                <div class="section-header">
+                    <h2>🕒 Recent Attendance Records</h2>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Course</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentRecordsBody">
+                            <tr>
+                                <td colspan="8" class="loading">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/attendance.js') }}"></script>
+</body>
+</html>

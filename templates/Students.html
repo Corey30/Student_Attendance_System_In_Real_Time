@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management - Student Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>Student Attendance System</h2>
+            </div>
+            <div class="nav-menu">
+                <span class="nav-user">{{ username }} ({{ role }})</span>
+                <a href="/logout" class="btn-logout">Log Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a href="/dashboard">
+                        <span class="icon">📈</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/attendance">
+                        <span class="icon">✓</span>
+                        <span>Attendance Records</span>
+                    </a>
+                </li>
+                <li class="menu-item active">
+                    <a href="/students">
+                        <span class="icon">👥</span>
+                        <span>Student Management</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/reports">
+                        <span class="icon">📄</span>
+                        <span>Reports & Statistics</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1>👥 Student Management</h1>
+                <div class="page-actions">
+                    <input type="text" id="searchInput" placeholder="🔍 Search by name or ID..." class="search-input">
+                    <button id="exportBtn" class="btn-primary">📥 Export to Excel</button>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="course-selection-card">
+                <h2>🔍 Filter Students</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="filterSection">Filter by Section:</label>
+                        <select id="filterSection" class="form-control">
+                            <option value="">-- All My Students --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="filterYear">Year Level:</label>
+                        <select id="filterYear" class="form-control">
+                            <option value="">-- All Years --</option>
+                            <option value="Freshman">Freshman</option>
+                            <option value="Sophomore">Sophomore</option>
+                            <option value="Junior">Junior</option>
+                            <option value="Senior">Senior</option>
+                        </select>
+                    </div>
+                    <button id="applyFilterBtn" class="btn-primary">Apply Filter</button>
+                </div>
+            </div>
+
+            <!-- Students List Section -->
+            <div class="records-section">
+                <div class="section-header">
+                    <h2>📋 Student List</h2>
+                    <div class="student-count">
+                        <span id="studentCount">0</span> students
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Year Level</th>
+                                <th>Major</th>
+                                <th>Email</th>
+                                <th>Attendance Rate</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <tr>
+                                <td colspan="7" class="loading">Loading students...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Student Detail Modal -->
+    <div id="studentDetailModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2>👤 Student Details</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Student Info Card -->
+                <div class="student-info-card">
+                    <h3>Personal Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="label">Student ID:</span>
+                            <span id="detailSchoolId">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Full Name:</span>
+                            <span id="detailFullName">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Year Level:</span>
+                            <span id="detailYearLevel">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Major:</span>
+                            <span id="detailMajor">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Email:</span>
+                            <span id="detailEmail">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Gender:</span>
+                            <span id="detailGender">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enrollment Info -->
+                <div class="student-info-card">
+                    <h3>Enrolled Courses</h3>
+                    <div id="enrolledCourses">
+                        <p class="loading">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Attendance Summary -->
+                <div class="student-info-card">
+                    <h3>Attendance Summary</h3>
+                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+                        <div class="stat-card-mini">
+                            <div class="stat-label">Total Classes</div>
+                            <div class="stat-value" id="totalClasses">0</div>
+                        </div>
+                        <div class="stat-card-mini">
+                            <div class="stat-label">Present</div>
+                            <div class="stat-value" style="color: #4CAF50;" id="presentCount">0</div>
+                        </div>
+                        <div class="stat-card-mini">
+                            <div class="stat-label">Absent</div>
+                            <div class="stat-value" style="color: #f44336;" id="absentCount">0</div>
+                        </div>
+                        <div class="stat-card-mini">
+                            <div class="stat-label">Late</div>
+                            <div class="stat-value" style="color: #FF9800;" id="lateCount">0</div>
+                        </div>
+                        <div class="stat-card-mini">
+                            <div class="stat-label">Attendance Rate</div>
+                            <div class="stat-value" style="color: #2196F3;" id="attendanceRate">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance History -->
+                <div class="student-info-card">
+                    <h3>📅 Recent Attendance Records (Last 20)</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Course</th>
+                                    <th>Section</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceHistory">
+                                <tr>
+                                    <td colspan="4" class="loading">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/students.js') }}"></script>
+</body>
+</html>

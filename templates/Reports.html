@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Statistics - Student Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>📚 Student Attendance System</h2>
+            </div>
+            <div class="nav-menu">
+                <span class="nav-user">👤 {{ username }} ({{ role }})</span>
+                <a href="/logout" class="btn-logout">Log Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a href="/dashboard">
+                        <span class="icon">📈</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/attendance">
+                        <span class="icon">✓</span>
+                        <span>Attendance Records</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/students">
+                        <span class="icon">👥</span>
+                        <span>Student Management</span>
+                    </a>
+                </li>
+                <li class="menu-item active">
+                    <a href="/reports">
+                        <span class="icon">📄</span>
+                        <span>Reports & Statistics</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1>📊 Reports & Statistics</h1>
+            </div>
+
+            <!-- Report Type Selection -->
+            <div class="course-selection-card">
+                <h2>📋 Generate Report</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reportType">Report Type:</label>
+                        <select id="reportType" class="form-control">
+                            <option value="section">Section Attendance Report</option>
+                            <option value="monthly">Monthly Summary</option>
+                            <option value="semester">Semester Summary</option>
+                            <option value="ranking">Attendance Rankings</option>
+                            <option value="warnings">Low Attendance Warnings</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="sectionSelectGroup">
+                        <label for="reportSection">Select Section:</label>
+                        <select id="reportSection" class="form-control">
+                            <option value="">-- Select Section --</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="dateRangeGroup" style="display:none;">
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" id="startDate" class="form-control">
+                    </div>
+                    <div class="form-group" id="endDateGroup" style="display:none;">
+                        <label for="endDate">End Date:</label>
+                        <input type="date" id="endDate" class="form-control">
+                    </div>
+                    <button id="generateReportBtn" class="btn-primary">📊 Generate Report</button>
+                </div>
+            </div>
+
+            <!-- Section Attendance Report -->
+            <div id="sectionReportSection" class="records-section" style="display:none;">
+                <div class="section-header">
+                    <h2>📈 Section Attendance Report</h2>
+                    <button id="exportSectionBtn" class="btn-primary">📥 Export to Excel</button>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #4CAF50;">📊</div>
+                        <div class="stat-info">
+                            <h3>Overall Rate</h3>
+                            <div class="stat-value" id="overallRate">0%</div>
+                            <p class="stat-label">Average Attendance</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #2196F3;">👥</div>
+                        <div class="stat-info">
+                            <h3>Total Students</h3>
+                            <div class="stat-value" id="totalStudents">0</div>
+                            <p class="stat-label">Enrolled</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #FF9800;">📅</div>
+                        <div class="stat-info">
+                            <h3>Classes Held</h3>
+                            <div class="stat-value" id="classesHeld">0</div>
+                            <p class="stat-label">Total Sessions</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #f44336;">⚠️</div>
+                        <div class="stat-info">
+                            <h3>At Risk</h3>
+                            <div class="stat-value" id="atRiskCount">0</div>
+                            <p class="stat-label">Below 75%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trend Chart -->
+                <div class="chart-card">
+                    <h3>📈 Attendance Trend</h3>
+                    <canvas id="trendChart"></canvas>
+                </div>
+
+                <!-- Detailed Table -->
+                <div class="table-container">
+                    <table class="data-table" id="sectionReportTable">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Total Classes</th>
+                                <th>Present</th>
+                                <th>Absent</th>
+                                <th>Late</th>
+                                <th>Attendance Rate</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sectionReportBody">
+                            <tr>
+                                <td colspan="8" class="loading">Generate a report to see data</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Rankings Report -->
+            <div id="rankingsReportSection" class="records-section" style="display:none;">
+                <div class="section-header">
+                    <h2>🏆 Attendance Rankings</h2>
+                    <button id="exportRankingsBtn" class="btn-primary">📥 Export to Excel</button>
+                </div>
+
+                <!-- Top Performers -->
+                <div class="rankings-container">
+                    <div class="ranking-card">
+                        <h3>🥇 Top 10 Students</h3>
+                        <div id="topStudents"></div>
+                    </div>
+                </div>
+
+                <!-- All Rankings Table -->
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Total Classes</th>
+                                <th>Attendance Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rankingsBody">
+                            <tr>
+                                <td colspan="5" class="loading">Generate report to see rankings</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Warnings Report -->
+            <div id="warningsReportSection" class="records-section" style="display:none;">
+                <div class="section-header">
+                    <h2>⚠️ Low Attendance Warnings</h2>
+                    <button id="exportWarningsBtn" class="btn-primary">📥 Export to Excel</button>
+                </div>
+
+                <div class="warning-info">
+                    <p>Students with attendance rate below 75% require attention</p>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Course</th>
+                                <th>Section</th>
+                                <th>Attendance Rate</th>
+                                <th>Classes Missed</th>
+                                <th>Risk Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="warningsBody">
+                            <tr>
+                                <td colspan="7" class="loading">Generate report to see warnings</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Monthly/Semester Summary -->
+            <div id="summaryReportSection" class="records-section" style="display:none;">
+                <div class="section-header">
+                    <h2 id="summaryTitle">📅 Summary Report</h2>
+                    <button id="exportSummaryBtn" class="btn-primary">📥 Export to Excel</button>
+                </div>
+
+                <!-- Summary Stats -->
+                <div class="stats-grid" id="summaryStats"></div>
+
+                <!-- Comparison Chart -->
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3>📊 Course Comparison</h3>
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+</body>
+</html>

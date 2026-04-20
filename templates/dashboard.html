@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Real-time Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>Student Attendance System</h2>
+            </div>
+            <div class="nav-menu">
+                <span class="nav-user">👤 {{ username }} ({{ role }})</span>
+                <a href="/logout" class="btn-logout">Log Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="menu-item active">
+                    <a href="/dashboard">
+                        <span class="icon">📈</span>
+                        <span>Real-time Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/attendance">
+                        <span class="icon">✓</span>
+                        <span>Attendance Records</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/students">
+                        <span class="icon"></span>
+                        <span>Student Management</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="/reports">
+                        <span class="icon">📄</span>
+                        <span>Reports & Statistics</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Title and Refresh Time -->
+            <div class="page-header">
+                <h1>Real-time Attendance Dashboard</h1>
+                <div class="last-update">
+                    Last Updated: <span id="lastUpdate">--</span>
+                    <button id="refreshBtn" class="btn-refresh">🔄 Refresh</button>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #4CAF50;">📊</div>
+                    <div class="stat-info">
+                        <h3>Attendance Rate</h3>
+                        <div class="stat-value" id="attendanceRate">0%</div>
+                        <p class="stat-label">Today's Overall Attendance Rate</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #2196F3;">✓</div>
+                    <div class="stat-info">
+                        <h3>Present</h3>
+                        <div class="stat-value" id="presentCount">0</div>
+                        <p class="stat-label">Students Present Today</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #FF5722;">✗</div>
+                    <div class="stat-info">
+                        <h3>Absent</h3>
+                        <div class="stat-value" id="absentCount">0</div>
+                        <p class="stat-label">Students Absent Today</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #FF9800;">⏰</div>
+                    <div class="stat-info">
+                        <h3>Late</h3>
+                        <div class="stat-value" id="lateCount">0</div>
+                        <p class="stat-label">Students Late Today</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-container">
+                <!-- Weekly Attendance Trend -->
+                <div class="chart-card">
+                    <h3>📈 Weekly Attendance Trend</h3>
+                    <canvas id="weekTrendChart"></canvas>
+                </div>
+
+                <!-- Course-wise Attendance -->
+                <div class="chart-card">
+                    <h3>📚 Today's Course Attendance Rate</h3>
+                    <canvas id="courseStatsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Attendance Records -->
+            <div class="records-section">
+                <div class="section-header">
+                    <h2>📋 Recent Attendance Records</h2>
+                    <button id="addAttendanceBtn" class="btn-primary">+ Add Attendance</button>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Course</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentRecordsBody">
+                            <tr>
+                                <td colspan="8" class="loading">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Attendance Modal -->
+    <div id="addAttendanceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Attendance Record</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="addAttendanceForm">
+                <div class="form-group">
+                    <label for="studentId">Student ID *</label>
+                    <input type="text" id="studentId" required placeholder="Enter Student ID">
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Course/Subject *</label>
+                    <select id="subject" required>
+                        <option value="">Please select a course</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Attendance Status *</label>
+                    <select id="status" required>
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                        <option value="Late">Late</option>
+                        <option value="Excused">Excused</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="remarks">Remarks</label>
+                    <textarea id="remarks" rows="3" placeholder="Optional"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Submit</button>
+                    <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
